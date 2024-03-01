@@ -4,6 +4,7 @@ import org.simpleframework.xml.Element
 import org.simpleframework.xml.Namespace
 import org.simpleframework.xml.Root
 
+
 @Root(name = "Envelope")
 @Namespace(prefix = "soap", reference = "http://schemas.xmlsoap.org/soap/envelope/")
 class ProfileResponse {
