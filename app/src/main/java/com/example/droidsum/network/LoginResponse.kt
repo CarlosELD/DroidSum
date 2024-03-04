@@ -7,17 +7,17 @@ import org.simpleframework.xml.Root
 @Root(name = "Envelope")
 @Namespace(prefix = "soap", reference = "http://schemas.xmlsoap.org/soap/envelope/")
 class LoginResponse {
-    @Element(name = "Body")
+    @field:Element(name = "Body")
     var body: Body? = null
 
     class Body {
-        @Element(name = "accesoLoginResponse", required = false)
-        var accessLoginResponse: AccessLoginResponse? = null
+        @field:Element(name = "accesoLoginResponse", required = false)
+        var accesoLoginResponse: AccesoLoginResponse? = null
     }
 
-    class AccessLoginResponse {
-        @Element(name = "accesoLoginResult", required = false)
-        var result: String? = null
+    class AccesoLoginResponse {
+        @field:Element(name = "accesoLoginResult", required = false)
+        var accesoLoginResult: String? = null
     }
 }
 

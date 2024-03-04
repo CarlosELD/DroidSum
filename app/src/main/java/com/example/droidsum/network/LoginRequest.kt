@@ -8,22 +8,22 @@ import org.simpleframework.xml.Root
 @Root(name = "Envelope")
 @Namespace(prefix = "soap", reference = "http://schemas.xmlsoap.org/soap/envelope/")
 class LoginRequest {
-    @Element(name = "Body")
+    @field:Element(name = "Body")
     var body: Body? = null
 
     class Body {
-        @Element(name = "accesoLogin", required = false)
-        var accessLogin: AccessLogin? = null
+        @field:Element(name = "accesoLogin", required = false)
+        var accesoLogin: AccesoLogin? = null
     }
 
-    class AccessLogin {
-        @Element(name = "strMatricula", required = false)
-        var matricula: String? = null
+    class AccesoLogin {
+        @field:Element(name = "strMatricula", required = false)
+        var strMatricula: String? = null
 
-        @Element(name = "strContrasenia", required = false)
-        var contrasenia: String? = null
+        @field:Element(name = "strContrasenia", required = false)
+        var strContrasenia: String? = null
 
-        @Element(name = "tipoUsuario", required = false)
+        @field:Element(name = "tipoUsuario", required = false)
         var tipoUsuario: String? = null
     }
 }

@@ -13,8 +13,7 @@ class ProfileResponse {
 
     class Body {
         @Element(name = "getAlumnoAcademicoWithLineamientoResponse", required = false)
-        var getAlumnoAcademicoWithLineamientoResponse: GetAlumnoAcademicoWithLineamientoResponse? =
-            null
+        var getAlumnoAcademicoWithLineamientoResponse: ProfileRequest.GetAlumnoAcademicoWithLineamiento? = null
     }
 
     class GetAlumnoAcademicoWithLineamientoResponse {
