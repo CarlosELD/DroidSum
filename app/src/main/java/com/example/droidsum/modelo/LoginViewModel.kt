@@ -1,73 +1,36 @@
 package com.example.droidsum.modelo
 
+
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.example.droidsum.network.LoginRequest
-import com.example.droidsum.network.LoginResponse
-import com.example.droidsum.network.ProfileRequest
-import com.example.droidsum.network.ProfileResponse
-import com.example.droidsum.network.SumService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.viewModelScope
+import com.example.droidsum.data.SumRepository
+import kotlinx.coroutines.launch
 
-class LoginViewModel(private val sicenetService: SumService) : ViewModel() {
-
-    fun authenticate(matricula: String, password: String, onResult: (Boolean) -> Unit) {
-        val request = LoginRequest().apply {
-            this.body?.accesoLogin?.strMatricula = matricula
-            this.body?.accesoLogin?.strContrasenia = password
-            this.body?.accesoLogin?.tipoUsuario = "ALUMNO"
-        }
-
-        sicenetService.login(request).enqueue(object : Callback<LoginResponse> {
-            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                if (response.isSuccessful) {
-                    // Aquí puedes verificar si la autenticación fue exitosa
-                    // Por ejemplo, puedes examinar la respuesta para determinar si el usuario fue autenticado correctamente
-                    onResult(true)
-                } else {
-                    // Si la respuesta no fue exitosa, retorna false
-                    onResult(false)
-                }
-            }
-
-            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                // Si la llamada falla, retorna false
-                onResult(false)
-            }
-        })
+class LoginViewModel(private val repository: SumRepository) : ViewModel() {
+    // Estado del inicio de sesión
+    sealed class LoginState {
+        object Idle : LoginState() // Estado inicial
+        object Loading : LoginState() // Estado de carga
+        data class Success(val profile: String) : LoginState() // Estado de éxito con perfil
+        data class Error(val message: String) : LoginState() // Estado de error
     }
 
-    fun getProfileData(matricula: String, onProfileData: (ProfileRequest.GetAlumnoAcademicoWithLineamiento?) -> Unit) {
-        val request = ProfileRequest().apply {
-            this.body?.getAlumnoAcademicoWithLineamiento?.matricula = matricula
-        }
+    // Estado actual del inicio de sesión
+    private val _loginState = mutableStateOf<LoginState>(LoginState.Idle)
+    val loginState: State<LoginState> = _loginState
 
-        sicenetService.getProfile(request).enqueue(object : Callback<ProfileResponse> {
-            override fun onResponse(call: Call<ProfileResponse>, response: Response<ProfileResponse>) {
-                if (response.isSuccessful) {
-                    val profileResponse = response.body()
-                    val profileData = profileResponse?.body?.getAlumnoAcademicoWithLineamientoResponse
-                    onProfileData(profileData)
-                } else {
-                    onProfileData(null)
-                }
+    // Función para iniciar sesión
+    fun login(matricula: String, password: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading // Cambio de estado a carga
+            try {
+                val result = repository.acceso(matricula, password)
+                _loginState.value = LoginState.Success(result) // Cambio de estado a éxito con perfil
+            } catch (e: Exception) {
+                _loginState.value = LoginState.Error("Error al iniciar sesión") // Cambio de estado a error
             }
-
-            override fun onFailure(call: Call<ProfileResponse>, t: Throwable) {
-                onProfileData(null)
-            }
-        })
-    }
-}
-
-class ViewModelFactory(private val servicio: SumService) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(servicio) as T
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,16 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.droidsum.modelo.LoginViewModel
-import com.example.droidsum.network.ProfileRequest
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel) {
+fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
     var matricula by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
-    var profile by remember { mutableStateOf<ProfileRequest.GetAlumnoAcademicoWithLineamiento?>(null) }
-    var isFetchingProfile by remember { mutableStateOf(false) }
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Yellow) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -53,38 +48,28 @@ fun LoginScreen(viewModel: LoginViewModel) {
             )
             Button(
                 onClick = {
-                    viewModel.authenticate(matricula, password) { isAuthenticated ->
-                        if (isAuthenticated) {
-                            isFetchingProfile = true
-                            viewModel.getProfileData(matricula) { profileData ->
-                                profile = profileData
-                                isFetchingProfile = false
-                            }
-                        } else {
-                            showError = true
-                        }
-                    }
+                    viewModel.login(matricula, password)
                 },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
                 Text("Iniciar sesión")
             }
-            if (showError) {
-                Text(
-                    text = "Matrícula o contraseña incorrectos, inténtalo de nuevo",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-            if (isFetchingProfile) {
-                Spacer(modifier = Modifier.height(16.dp))
-                CircularProgressIndicator()
-            }
-            profile?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                PerfilScreen(it)
+            when (val state = viewModel.loginState.value) {
+                is LoginViewModel.LoginState.Loading -> {
+                    // Muestra un indicador de carga
+                    CircularProgressIndicator()
+                }
+                is LoginViewModel.LoginState.Success -> {
+                    navController.navigate("perfil")
+                }
+                is LoginViewModel.LoginState.Error -> {
+                    Text(state.message, modifier = Modifier.padding(top = 16.dp))
+                }
+                else -> Unit
             }
         }
     }
 }
+
+
 
